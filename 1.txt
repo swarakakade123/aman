@@ -1,0 +1,363 @@
+#!/bin/bash
+
+# Student Database Handling
+
+db="student"
+
+create()
+{
+    echo "Create Database"
+    touch "$db"
+    echo "Database created successfully."
+}
+
+insert()
+{
+    echo "Insert Record into Database"
+    echo "How many records do you want to insert?"
+    read no
+
+    while [ "$no" -ne 0 ]
+    do
+        echo "Enter Roll Number:"
+        read roll
+
+        echo "Enter Name:"
+        read name
+
+        echo "Enter Email:"
+        read email
+
+        echo "Enter Class:"
+        read class
+
+        echo "$roll|$name|$email|$class" >> "$db"
+
+        echo "Record Inserted Successfully."
+
+        no=$((no-1))
+    done
+}
+
+display()
+{
+    echo "Display Database"
+
+    if [ -s "$db" ]
+    then
+        echo "-------------------------------------------------------------"
+        echo "| Roll No | Name | Email | Class |"
+        echo "-------------------------------------------------------------"
+
+        while IFS="|" read roll name email class
+        do
+            echo "| $roll | $name | $email | $class |"
+        done < "$db"
+
+        echo "-------------------------------------------------------------"
+    else
+        echo "Database is Empty."
+    fi
+}
+
+search()
+{
+    echo "Search Record"
+    echo "Enter Student Name:"
+    read name_search
+
+    result=$(grep -i "|$name_search|" "$db")
+
+    if [ -n "$result" ]
+    then
+        echo "Record Found:"
+        echo "$result"
+    else
+        echo "Record Not Found."
+    fi
+}
+
+delete_record()
+{
+    echo "Delete Record"
+    echo "Enter Student Name:"
+    read name_del
+
+    if grep -iq "|$name_del|" "$db"
+    then
+        grep -iv "|$name_del|" "$db" > temp
+        mv temp "$db"
+        echo "Record Deleted Successfully."
+    else
+        echo "Record Not Found."
+    fi
+}
+
+modify()
+{
+    echo "Modify Record"
+    echo "Enter Student Name:"
+    read name_modify
+
+    if grep -iq "|$name_modify|" "$db"
+    then
+        grep -iv "|$name_modify|" "$db" > temp
+        mv temp "$db"
+
+        echo "Enter New Roll Number:"
+        read roll
+
+        echo "Enter New Email:"
+        read email
+
+        echo "Enter New Class:"
+        read class
+
+        echo "$roll|$name_modify|$email|$class" >> "$db"
+
+        echo "Record Modified Successfully."
+    else
+        echo "Record Not Found."
+    fi
+}
+
+while true
+do
+    echo
+    echo "========== STUDENT DATABASE =========="
+    echo "1. Create Database"
+    echo "2. Insert Record"
+    echo "3. Display Database"
+    echo "4. Search Record"
+    echo "5. Delete Record"
+    echo "6. Modify Record"
+    echo "7. Exit"
+    echo "======================================"
+    echo "Enter Your Choice:"
+    read ch
+
+    case $ch in
+        1)
+            create
+            ;;
+
+        2)
+            insert
+            ;;
+
+        3)
+            display
+            ;;
+
+        4)
+            search
+            ;;
+
+        5)
+            delete_record
+            ;;
+
+        6)
+            modify
+            ;;
+
+        7)
+            echo "Program Exited Successfully."
+            exit
+            ;;
+
+        *)
+            echo "Invalid Choice! Please Enter a Number Between 1 and 7."
+            ;;
+    esac
+done
+
+
+
+Command:
+./first.sh
+
+OUTPUT:
+========== STUDENT DATABASE ==========
+1. Create Database
+2. Insert Record
+3. Display Database
+4. Search Record
+5. Delete Record
+6. Modify Record
+7. Exit
+======================================
+Enter Your Choice:
+3
+Display Database
+Database is Empty.
+========== STUDENT DATABASE ==========
+1. Create Database
+2. Insert Record
+3. Display Database
+4. Search Record
+5. Delete Record
+6. Modify Record
+7. Exit
+======================================
+Enter Your Choice:
+1
+Create Database
+Database created successfully.
+========== STUDENT DATABASE ==========
+1. Create Database
+2. Insert Record
+3. Display Database
+4. Search Record
+5. Delete Record
+6. Modify Record
+7. Exit
+======================================
+Enter Your Choice:
+2
+Insert Record into Database
+How many records do you want to insert?
+3
+Enter Roll Number:
+
+Enter Name:
+
+Enter Email:
+
+Enter Class:
+TE-IT
+Record Inserted Successfully.
+Enter Roll Number:
+
+Enter Name:
+
+Enter Email:
+
+Enter Class:
+TE-IT
+Record Inserted Successfully.
+Enter Roll Number:
+401
+Enter Name:
+Riya
+Enter Email:
+riyaa@gmail.com
+Enter Class:
+TE-CO
+Record Inserted Successfully.
+========== STUDENT DATABASE ==========
+1. Create Database
+2. Insert Record
+3. Display Database
+4. Search Record
+5. Delete Record
+6. Modify Record
+7. Exit
+======================================
+Enter Your Choice:
+3
+Display Database
+-------------------------------------------------------------
+| Roll No | Name | Email | Class |
+-------------------------------------------------------------
+| 401 | Riya | riyaa@gmail.com | TE-CO |
+-------------------------------------------------------------
+========== STUDENT DATABASE ==========
+1. Create Database
+2. Insert Record
+3. Display Database
+4. Search Record
+5. Delete Record
+6. Modify Record
+7. Exit
+======================================
+Enter Your Choice:
+4
+Search Record
+Enter Student Name:
+
+Record Found:
+
+========== STUDENT DATABASE ==========
+1. Create Database
+2. Insert Record
+3. Display Database
+4. Search Record
+5. Delete Record
+6. Modify Record
+7. Exit
+======================================
+Enter Your Choice:
+6
+Modify Record
+Enter Student Name:
+Riya
+Enter New Roll Number:
+
+Enter New Email:
+riya1@gmail.com
+Enter New Class:
+TE-IT
+Record Modified Successfully.
+========== STUDENT DATABASE ==========
+1. Create Database
+2. Insert Record
+3. Display Database
+4. Search Record
+5. Delete Record
+6. Modify Record
+7. Exit
+======================================
+Enter Your Choice:
+3
+Display Database
+-------------------------------------------------------------
+| Roll No | Name | Email | Class |
+-------------------------------------------------------------
+
+|  | Riya | riya1@gmail.com | TE-IT |
+-------------------------------------------------------------
+========== STUDENT DATABASE ==========
+1. Create Database
+2. Insert Record
+3. Display Database
+4. Search Record
+5. Delete Record
+6. Modify Record
+7. Exit
+======================================
+Enter Your Choice:
+5
+Delete Record
+Enter Student Name:
+riya
+Record Deleted Successfully.
+========== STUDENT DATABASE ==========
+1. Create Database
+2. Insert Record
+3. Display Database
+4. Search Record
+5. Delete Record
+6. Modify Record
+7. Exit
+======================================
+Enter Your Choice:
+3
+Display Database
+-------------------------------------------------------------
+| Roll No | Name | Email | Class |
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+========== STUDENT DATABASE ==========
+1. Create Database
+2. Insert Record
+3. Display Database
+4. Search Record
+5. Delete Record
+6. Modify Record
+7. Exit
+======================================
+Enter Your Choice:
+7
+Program Exited Successfully.

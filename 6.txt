@@ -1,0 +1,107 @@
+Client:
+#include<stdio.h>
+#include<unistd.h>
+#include<sys/stat.h>
+#include<fcntl.h>
+#include<stdlib.h>
+char fifo[20]="myfifo",fifo1[20]="myfifo1";
+void main()
+{
+FILE *fp;
+int fd, fd1, word=0, chr=0, line=0, flag=0;
+char msg[512],msg1[512];
+
+fd=open("fifo",O_RDONLY);
+read(fd,msg,sizeof(msg));
+printf("\nThe message from server is: %s \n",msg);
+
+for(int i=0; msg[i] != '\0'; i++)
+{
+char ch=msg[i];
+chr++;
+
+if(ch=='\n')
+{
+line++;
+}
+if(ch==' ')
+{
+flag=0;
+}
+else if(flag==0)
+{
+word++;
+flag=1;
+}
+}
+line++;
+
+fp=fopen("file.txt", "w");
+fprintf(fp,"No of Lines:%d \n",line);
+fprintf(fp,"No of Words:%d \n",word);
+fprintf(fp,"No of Characters:%d \n",chr);
+sprintf(msg1,"No of lines=%d \n No of Words:%d \n No of Characters:%d",line,word,chr);
+
+fd1=open("fifo1",O_WRONLY);
+write(fd1,msg1,sizeof(msg1));
+
+unlink("fifo");
+unlink("fifo1");
+}
+
+
+SERVER:
+#include<stdio.h>
+#include<unistd.h>
+#include<sys/stat.h>
+#include<sys/wait.h>
+#include<fcntl.h>
+#include<stdlib.h>
+char fifo[20]="myfifo",fifo1[20]="myfifo1";
+void main()
+{
+int fd,fd1;
+char buff[512]="Hi \nWelcome to svpmcoe \nThank You. ",buff1[512];
+mkfifo("fifo",0666);
+mkfifo("fifo1",0666);
+fd=open("fifo",O_WRONLY);
+write(fd,buff,sizeof(buff));
+fd1=open("fifo1",O_RDONLY);
+read(fd1,buff1,sizeof(buff1));
+printf("\nThe response from client is: %s \n",buff1);
+
+unlink("fifo");
+unlink("fifo1");
+}
+
+
+
+Command:
+
+SERVER:
+gcc server.c -o server
+./server
+
+CLIENT:
+gcc client.c -o client
+./client
+
+
+
+OUTPUT:
+
+The response from client is: No of lines=3
+No of Words:6
+No of Characters:35
+
+The message from server is: Hi
+Welcome to svpmcoe
+Thank You.
+
+
+FILE CONTENT :
+
+cat file.txt
+No of Lines:3
+No of Words:6
+No of Characters:35

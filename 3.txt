@@ -1,0 +1,93 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<pthread.h>
+#include<unistd.h>
+#include<semaphore.h>
+#include<stdint.h>
+#define BUFF 10
+sem_t full,empty,mutex;
+int item,count=0, in=0,out=0,buffer[20];
+
+void *producer(void *arg)
+{
+int pno;
+pno=(int)(intptr_t)arg;
+int item = rand()%10;
+sem_wait(&empty);
+sem_wait(&mutex);
+buffer[in]=item;
+printf("\n Producer P[%d] produced item = %d ",pno,item);
+in=(in+1)%BUFF;
+sem_post(&mutex);
+sem_post(&full);
+pthread_exit(NULL);
+}
+
+void *consumer(void *arg1)
+{
+int cno;
+cno=(int)(intptr_t)arg1;
+sem_wait(&full);
+sem_wait(&mutex);
+item=buffer[out];
+printf("\n Consumer C[%d] consumes item=%d",cno,item);
+out=(out+1)%BUFF;
+sem_post(&mutex);
+sem_post(&empty);
+pthread_exit(NULL);
+}
+
+void main()
+{
+pthread_t pro[20],con[20];
+intptr_t i=0;
+int np,nc;
+printf("\n Enter the number of producer\n");
+scanf("%d",&np);
+printf("\n Enter the number of consumer\n");
+scanf("%d",&nc);
+
+sem_init(&full,1,0);
+sem_init(&empty,1,BUFF);
+sem_init(&mutex,1,1);
+
+for(i=0;i<np;i++)
+{
+pthread_create(&pro[i],NULL,producer,(void *)i);
+}
+for(i=0;i<np;i++)
+{
+pthread_join(pro[i],NULL);
+}
+
+for(i=0;i<nc;i++)
+{
+pthread_create(&con[i],NULL,consumer,(void *)i);
+}
+for(i=0;i<nc;i++)
+{
+pthread_join(con[i],NULL);
+}
+sem_destroy(&full);
+sem_destroy(&empty);
+sem_destroy(&mutex);
+}
+
+
+Command
+gcc producer.c -lpthread -o producer
+./producer
+
+Output:
+Enter the number of producer
+4
+Enter the number of consumer
+4
+Producer P[0] produced item = 3
+Producer P[1] produced item = 6
+Producer P[2] produced item = 7
+Producer P[3] produced item = 5
+Consumer C[0] consumes item=3
+Consumer C[1] consumes item=6
+Consumer C[2] consumes item=7
+Consumer C[3] consumes item=5

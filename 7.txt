@@ -1,0 +1,57 @@
+#include<stdio.h>
+#include<unistd.h>
+#include<sys/types.h>
+#include<sys/wait.h>
+#include<stdlib.h>
+void main()
+{
+char ch,buff[100],buff1[100];
+FILE *fp;
+int fd[2];
+pid_t pid;
+pipe(fd);
+pid=fork();
+if(pid>0)
+{
+printf("\nThis is parent process with pid= %d",getpid());
+close(fd[0]);
+printf("\nEnter the name of file send to child on pipe: ");
+scanf("%s",buff);
+write(fd[1],buff,sizeof(buff));
+close(fd[1]);
+printf("\n");
+wait(NULL);
+}
+else
+{
+printf("\nThis is child process with pid= %d",getpid());
+close(fd[1]);
+read(fd[0],buff1,sizeof(buff1));
+close(fd[0]);
+printf("\nthe name of file sent by parent process is =%s \n",buff1);
+fp=fopen(buff1, "r");
+if(fp==NULL)
+{
+printf("can't open the file");
+}
+printf("\nContent of File: ");
+printf("\n");
+while((ch=fgetc(fp))!=EOF)
+{
+printf("%c",ch);
+}
+fclose(fp);
+}
+}
+
+
+Command:
+gcc pipe.c -o pipe
+./pipe
+
+Output:
+This is parent process with pid= 4571
+Enter the name of file send to child on pipe:
+student
+This is child process with pid= 4572
+the name of file sent by parent process is =student

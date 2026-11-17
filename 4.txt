@@ -1,0 +1,93 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<pthread.h>
+#include<unistd.h>
+#include<semaphore.h>
+#include<stdint.h>
+#define N 5
+sem_t chopstick[N],table;
+
+void *dphilo(void *arg)
+{
+int pno;
+pno=(int) (intptr_t)arg;
+int left=pno;
+int right=(pno + 1)%N;
+
+printf("\n Philosopher %d is Thinking",pno+1);
+sleep(1);
+printf("\n Philosopher %d is Hungry",pno+1);
+sleep(1);
+
+sem_wait(&table);
+printf("\n Philosopher %d picked Fork %d (left)", pno+1,left);
+sem_wait(&chopstick[left]);
+printf("\n Philosopher %d picked Fork %d (right)", pno+1,right);
+sem_wait(&chopstick[right]);
+printf("\n Philosopher %d is now eating", pno+1);
+sem_post(&chopstick[right]);
+sem_post(&chopstick[left]);
+
+sem_post(&table);
+printf("\n Philosopher %d is finished Eating", pno+1);
+
+pthread_exit(NULL);
+}
+
+void main()
+{
+pthread_t philo[N];
+intptr_t i=0;
+
+for(i=0;i<N;i++)
+{
+sem_init(&chopstick[i],0,1);
+}
+sem_init(&table,0,1);
+
+for(i=0;i<N;i++)
+{
+pthread_create(&philo[i],NULL,dphilo,(void *)i);
+}
+
+for(i=0;i<N;i++)
+{
+pthread_join(philo[i],NULL);
+}
+}
+
+
+Command
+gcc dining.c -lpthread -o dining
+./dining
+
+Output:
+Philosopher 1 is Thinking
+Philosopher 2 is Thinking
+Philosopher 3 is Thinking
+Philosopher 5 is Thinking
+Philosopher 4 is Thinking
+Philosopher 1 is Hungry
+Philosopher 2 is Hungry
+Philosopher 5 is Hungry
+Philosopher 3 is Hungry
+Philosopher 4 is Hungry
+Philosopher 2 picked Fork 1 (left)
+Philosopher 2 picked Fork 2 (right)
+Philosopher 2 is now eating
+Philosopher 2 is finished Eating
+Philosopher 1 picked Fork 0 (left)
+Philosopher 1 picked Fork 1 (right)
+Philosopher 1 is now eating
+Philosopher 1 is finished Eating
+Philosopher 5 picked Fork 4 (left)
+Philosopher 5 picked Fork 0 (right)
+Philosopher 5 is now eating
+Philosopher 5 is finished Eating
+Philosopher 3 picked Fork 2 (left)
+Philosopher 3 picked Fork 3 (right)
+Philosopher 3 is now eating
+Philosopher 3 is finished Eating
+Philosopher 4 picked Fork 3 (left)
+Philosopher 4 picked Fork 4 (right)
+Philosopher 4 is now eating

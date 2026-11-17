@@ -1,0 +1,222 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+void sort(int a[], int n)
+{
+    int i, j, temp;
+
+    for (i = 0; i < n - 1; i++)
+    {
+        for (j = 0; j < n - i - 1; j++)
+        {
+            if (a[j] > a[j + 1])
+            {
+                temp = a[j];
+                a[j] = a[j + 1];
+                a[j + 1] = temp;
+            }
+        }
+    }
+}
+
+void SSTF(int a[], int n, int head)
+{
+    int visited[100] = {0};
+    int total = 0, current = head;
+    int i, j, min, index;
+
+    printf("\nSSTF Sequence: %d", current);
+
+    for (i = 0; i < n; i++)
+    {
+        min = 999999;
+        index = -1;
+
+        for (j = 0; j < n; j++)
+        {
+            if (!visited[j] && abs(a[j] - current) < min)
+            {
+                min = abs(a[j] - current);
+                index = j;
+            }
+        }
+
+        visited[index] = 1;
+        total += abs(a[index] - current);
+        current = a[index];
+
+        printf(" -> %d", current);
+    }
+
+    printf("\nTotal Head Movement = %d cylinders\n", total);
+}
+
+void SCAN(int a[], int n, int head, int maxCylinder)
+{
+    int b[100], i, current = head, total = 0;
+
+    for (i = 0; i < n; i++)
+        b[i] = a[i];
+
+    sort(b, n);
+
+    printf("\nSCAN Sequence: %d", head);
+
+    // Move away from the spindle (toward higher cylinders)
+    for (i = 0; i < n; i++)
+    {
+        if (b[i] >= head)
+        {
+            total += b[i] - current;
+            current = b[i];
+            printf(" -> %d", current);
+        }
+    }
+
+    // Move to the end of the disk
+    if (current != maxCylinder)
+    {
+        total += maxCylinder - current;
+        current = maxCylinder;
+        printf(" -> %d", current);
+    }
+
+    // Reverse direction and service remaining requests
+    for (i = n - 1; i >= 0; i--)
+    {
+        if (b[i] < head)
+        {
+            total += current - b[i];
+            current = b[i];
+            printf(" -> %d", current);
+        }
+    }
+
+    printf("\nTotal Head Movement = %d cylinders\n", total);
+}
+
+void CLOOK(int a[], int n, int head)
+{
+    int b[100], i, current = head, total = 0;
+    int first = -1, last = -1;
+
+    for (i = 0; i < n; i++)
+        b[i] = a[i];
+
+    sort(b, n);
+
+    printf("\nC-LOOK Sequence: %d", head);
+
+    // Service requests toward higher cylinders
+    for (i = 0; i < n; i++)
+    {
+        if (b[i] >= head)
+        {
+            total += abs(b[i] - current);
+            current = b[i];
+            printf(" -> %d", current);
+        }
+    }
+
+    // Find the lowest and highest pending requests below the head
+    for (i = 0; i < n; i++)
+    {
+        if (b[i] < head)
+        {
+            if (first == -1)
+                first = i;
+
+            last = i;
+        }
+    }
+
+    // Jump to the lowest pending request, then continue upward
+    if (first != -1)
+    {
+        total += abs(current - b[first]);
+        current = b[first];
+        printf(" -> %d", current);
+
+        for (i = first + 1; i <= last; i++)
+        {
+            total += abs(b[i] - current);
+            current = b[i];
+            printf(" -> %d", current);
+        }
+    }
+
+    printf("\nTotal Head Movement = %d cylinders\n", total);
+}
+
+int main()
+{
+    int a[100], n, head, maxCylinder, i;
+
+    printf("Enter the number of disk requests: ");
+    scanf("%d", &n);
+
+    if (n < 1 || n > 100)
+    {
+        printf("Invalid number of requests.\n");
+        return 1;
+    }
+
+    printf("Enter the disk request queue: ");
+    for (i = 0; i < n; i++)
+        scanf("%d", &a[i]);
+
+    printf("Enter the initial head position: ");
+    scanf("%d", &head);
+
+    printf("Enter the maximum cylinder number: ");
+    scanf("%d", &maxCylinder);
+
+    if (maxCylinder < 0 || head < 0 || head > maxCylinder)
+    {
+        printf("Invalid head position or disk size.\n");
+        return 1;
+    }
+
+    for (i = 0; i < n; i++)
+    {
+        if (a[i] < 0 || a[i] > maxCylinder)
+        {
+            printf("Invalid cylinder request.\n");
+            return 1;
+        }
+    }
+
+    printf("\n--- Disk Scheduling Algorithms ---\n");
+
+    SSTF(a, n, head);
+    SCAN(a, n, head, maxCylinder);
+    CLOOK(a, n, head);
+
+    return 0;
+}
+
+Command:
+gcc disk.c -o disk
+./disk
+
+
+Output:
+Enter the number of disk requests: 8
+Enter the disk request queue: 50
+82
+170
+43
+140
+24
+16
+190
+Enter the initial head position: 45
+Enter the maximum cylinder number: 200
+
+--- Disk Scheduling Algorithms ---
+SSTF Sequence: 45 -> 43 -> 50 -> 24 -> 16 -> 82 -> 140 -> 170 -> 190
+Total Head Movement = 217 cylinders
+SCAN Sequence: 45 -> 50 -> 82 -> 140 -> 170 -> 190 -> 200 -> 43 -> 24 -> 16
+Total Head Movement = 339 cylinders
+C-LOOK Sequence: 45 -> 50 -> 82 -> 140 -> 170 -> 190 -> 16 -> 24 -> 43
+Total Head Movement = 346 cylinders
